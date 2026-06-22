@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduChunks - Bidirectional Rich Text Sync Across Iframes</title>
+  <meta name="description" content="EduChunks practical assessment - real-time bidirectional rich text editor syncing across independent iframes using postMessage with origin validation.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon">EC</div>
+      <div class="logo-text">
+        <h1>EduChunks</h1>
+        <span>Engineering Assessment Dashboard</span>
+      </div>
+    </div>
+    <div class="header-badges">
+      <!-- Theme Selector -->
+      <div class="badge" style="gap: 0.25rem; padding: 0.25rem; border-color: var(--border-glass);">
+        <button class="btn-clear theme-btn active" data-theme="dark" style="padding: 0.2rem 0.4rem; border-radius: 6px; font-size: 0.75rem; border: none; background: rgba(139, 92, 246, 0.2); color: #ffffff; cursor: pointer; transition: var(--transition-smooth); font-family: inherit;" title="Space Dark Theme">🌌 Dark</button>
+        <button class="btn-clear theme-btn" data-theme="matrix" style="padding: 0.2rem 0.4rem; border-radius: 6px; font-size: 0.75rem; border: none; background: transparent; color: var(--text-muted); cursor: pointer; transition: var(--transition-smooth); font-family: inherit;" title="Matrix Green Theme">📟 Matrix</button>
+        <button class="btn-clear theme-btn" data-theme="cyberpunk" style="padding: 0.2rem 0.4rem; border-radius: 6px; font-size: 0.75rem; border: none; background: transparent; color: var(--text-muted); cursor: pointer; transition: var(--transition-smooth); font-family: inherit;" title="Cyberpunk Neon Theme">👾 Neon</button>
+      </div>
+      
+      <div class="badge">
+        <div class="badge-pulse"></div>
+        <span>Broker Active</span>
+      </div>
+      <div class="badge badge-live">
+        <span>postMessage Broker v1.2</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left Section: Editors & Questions -->
+    <div class="editors-section">
+      
+
+
+      <!-- Interactive Message Broker Visualizer -->
+      <section class="broker-visualizer-container glass-card">
+        <div class="visualizer-node" id="node-frame-a">
+          <div class="node-icon">A</div>
+          <span>Editor Instance A</span>
+        </div>
+        
+        <div class="visualizer-line-container">
+          <div class="visualizer-line" id="line-a-to-host">
+            <svg class="beam-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+              <path class="beam-path-base" d="M 0,5 L 100,5" />
+              <path class="beam-path-pulse" id="pulse-a-to-host" d="M 0,5 L 100,5" />
+            </svg>
+          </div>
+          
+          <div class="visualizer-broker-circle" id="node-broker" title="Host Message Broker Relay Node">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            <div class="pulsar-ring" id="ring-1"></div>
+            <div class="pulsar-ring" id="ring-2"></div>
+            <div class="pulsar-ring" id="ring-3"></div>
+          </div>
+          
+          <div class="visualizer-line" id="line-host-to-b">
+            <svg class="beam-svg" viewBox="0 0 100 10" preserveAspectRatio="none">
+              <path class="beam-path-base" d="M 0,5 L 100,5" />
+              <path class="beam-path-pulse" id="pulse-host-to-b" d="M 0,5 L 100,5" />
+            </svg>
+          </div>
+        </div>
+        
+        <div class="visualizer-node" id="node-frame-b">
+          <div class="node-icon">B</div>
+          <span>Editor Instance B</span>
+        </div>
+      </section>
+
+      <!-- Iframe Side-by-Side Editors -->
+      <section class="iframe-grid">
+        
+        <!-- Editor Frame A -->
+        <div id="wrapper-frame-a" class="iframe-wrapper">
+          <div class="iframe-header">
+            <div class="iframe-title">
+              <div class="iframe-dot"></div>
+              <span>Editor Instance A</span>
+            </div>
+            <div class="iframe-status">id: frame-a</div>
+          </div>
+          <iframe id="frame-a" src="editor.html?id=frame-a" class="editor-iframe"></iframe>
+        </div>
+
+        <!-- Editor Frame B -->
+        <div id="wrapper-frame-b" class="iframe-wrapper">
+          <div class="iframe-header">
+            <div class="iframe-title">
+              <div class="iframe-dot"></div>
+              <span>Editor Instance B</span>
+            </div>
+            <div class="iframe-status">id: frame-b</div>
+          </div>
+          <iframe id="frame-b" src="editor.html?id=frame-b" class="editor-iframe"></iframe>
+        </div>
+
+      </section>
+    </div>
+
+    <!-- Right Section: Real-time Terminal Log -->
+    <aside class="glass-card terminal-card" style="position: relative;">
+      <canvas id="terminal-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.08; border-radius: 16px;"></canvas>
+      <div class="terminal-header" style="margin-bottom: 0.5rem; position: relative; z-index: 2;">
+        <div class="terminal-dots">
+          <span id="dot-close" class="tdot tdot-red" title="Close Terminal"></span>
+          <span id="dot-minimize" class="tdot tdot-yellow" title="Minimize Terminal"></span>
+          <span id="dot-maximize" class="tdot tdot-green" title="Toggle Fullscreen Terminal"></span>
+        </div>
+        <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">postMessage Event Broker Stream</div>
+        <div class="terminal-controls">
+          <button id="btn-clear-log" class="btn-clear" title="Clear terminal logs">Clear Log</button>
+        </div>
+      </div>
+      
+      <div id="terminal-filters" class="terminal-filters" style="display: flex; gap: 0.35rem; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-glass); padding-bottom: 0.5rem; user-select: none; position: relative; z-index: 2;">
+        <button class="filter-tab active" data-filter="all" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.7rem; color: #ffffff; cursor: pointer; transition: var(--transition-smooth); font-family: inherit;">All</button>
+        <button class="filter-tab" data-filter="format" style="background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; transition: var(--transition-smooth); font-family: inherit;">Format</button>
+        <button class="filter-tab" data-filter="typing" style="background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; transition: var(--transition-smooth); font-family: inherit;">Typing</button>
+        <button class="filter-tab" data-filter="history" style="background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 0.2rem 0.5rem; font-size: 0.7rem; color: var(--text-muted); cursor: pointer; transition: var(--transition-smooth); font-family: inherit;">History</button>
+      </div>
+      
+      <div id="terminal-body" class="terminal-body" style="position: relative; z-index: 2;">
+        <div class="terminal-empty">
+          No postMessage transactions logged yet. Type or click format actions inside the editors.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    <p>Designed and Built by Ayush Shivhare for EduChunks assessment. Driven by postMessage Sync Protocol.</p>
+  </footer>
+
+  <!-- Floating action button to restore terminal log -->
+  <button id="btn-restore-terminal" class="btn-clear" style="display: none; position: fixed; bottom: 2rem; right: 2rem; z-index: 200; padding: 0.6rem 1rem; border-radius: 9999px; background: var(--accent-purple); border: 1.5px solid var(--accent-purple); color: #ffffff; box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4); font-weight: 600; font-size: 0.8rem; cursor: pointer; align-items: center; gap: 0.5rem; transition: var(--transition-smooth); line-height: 1;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="4 17 10 11 4 5"/>
+      <line x1="12" y1="19" x2="20" y2="19"/>
+    </svg>
+    Restore Terminal Log
+  </button>
+
+  <script src="host.js"></script>
+</body>
+</html>

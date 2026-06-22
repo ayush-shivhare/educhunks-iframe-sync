@@ -1,0 +1,22 @@
+{
+  "name": "educhunks-iframe-sync",
+  "version": "1.0.0",
+  "description": "Bidirectional Rich Text Sync Across Iframes",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "postmessage",
+    "iframe-sync",
+    "rich-text",
+    "bidirectional"
+  ],
+  "author": "Ayush Shivhare",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}
